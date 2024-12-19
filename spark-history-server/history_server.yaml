@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-history-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-history-server
+  template:
+    metadata:
+      labels:
+        app: spark-history-server
+    spec:
+      containers:
+      - name: spark-history-server
+        image: gcr.io/spark-operator/spark:v3.0.0 # Use an appropriate image
+        args:
+        - /bin/bash
+        - -c
+        - |
+          /opt/spark/bin/spark-history-server.sh --properties-file /opt/spark/conf/spark-history-defaults.conf
+        ports:
+        - containerPort: 18080
+        volumeMounts:
+        - name: spark-history-volume
+          mountPath: /tmp/spark-events
+        env:
+        - name: SPARK_HISTORY_OPTS
+          value: "-Dspark.history.fs.logDirectory=/tmp/spark-events"
+      volumes:
+      - name: spark-history-volume
+        persistentVolumeClaim:
+          claimName: spark-history-pvc

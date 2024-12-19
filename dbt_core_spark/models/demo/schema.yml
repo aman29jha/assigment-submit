@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: spark_demo
+    description: "A starter dbt model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
+    tests:
+      - dbt_expectations.expect_table_column_count_to_equal:
+          value: 3
+      - dbt_expectations.expect_table_column_count_to_be_between:
+          min_value: 1 # (Optional)
+          max_value: 4
+  - name: spark_demo_test
+    description: "A starter dbt model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null

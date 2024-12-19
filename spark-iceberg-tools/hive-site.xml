@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- JDBC connection URL of the Hive Metastore database -->
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://hive-metastore.c96amu8k6o4e.ap-south-1.rds.amazonaws.com:3306/hiva_metastore</value>
+        <description>JDBC connect string for a JDBC metastore</description>
+    </property>
+
+    <!-- JDBC driver class name -->
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.jdbc.Driver</value>
+        <description>Driver class name for a JDBC metastore</description>
+    </property>
+
+    <!-- Username to use against the database -->
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>admin</value>
+        <description>Username to use against metastore database</description>
+    </property>
+
+    <!-- Password to use against the database -->
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>lenonbeautifulboy19dec</value>
+        <description>Password to use against metastore database</description>
+    </property>
+
+    <!-- The dialect of SQL that Hive uses for its queries -->
+    <property>
+        <name>datanucleus.autoCreateSchema</name>
+        <value>false</value>
+        <description>Whether to auto create the schema</description>
+    </property>
+
+    <!-- Metastore configuration -->
+    <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>true</value>
+        <description>Enforce metastore schema version consistency.</description>
+    </property>
+
+    <property>
+        <name>hive.metastore.uris</name>
+        <value>thrift://localhost:9083</value>
+        <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+    </property>
+
+    <!-- Iceberg Configuration -->
+    <property>
+        <name>iceberg.catalog.hive.type</name>
+        <value>hive</value>
+        <description>Use Hive catalog to manage Iceberg tables</description>
+    </property>
+</configuration>

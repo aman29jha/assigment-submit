@@ -1,0 +1,72 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: ScheduledSparkApplication
+metadata:
+  name: log-ingest-job-scheduler
+  namespace: default
+spec:
+  schedule: "@every 20m"
+  concurrencyPolicy: "Replace"
+  template:
+    spec:
+      volumes:
+        - name: ivy
+          emptyDir: {}
+      sparkConf:
+        spark.jars.packages: "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.6.1,org.apache.iceberg:iceberg-aws-bundle:1.5.0,org.apache.hadoop:hadoop-aws:3.3.4"
+        spark.driver.extraJavaOptions: "-Divy.cache.dir=/tmp -Divy.home=/tmp"
+        spark.kubernetes.allocation.batch.size: "10"
+        spark.sql.extensions: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+        spark.sql.catalog.spark_catalog: "org.apache.iceberg.spark.SparkCatalog"
+        spark.sql.catalog.spark_catalog.type: "glue"
+        spark.sql.catalog.spark_catalog.glue.catalog-endpoint: "glue.ap-south-1.amazonaws.com"
+        spark.sql.catalog.spark_catalog.glue.region: "ap-south-1"
+        spark.sql.catalog.spark_catalog.warehouse: "s3a://granica-iceberg"
+        spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+        spark.hadoop.fs.s3a.aws.credentials.provider: "com.amazonaws.auth.DefaultAWSCredentialsProviderChain"
+        spark.hadoop.fs.s3a.endpoint: "s3.ap-south-1.amazonaws.com"
+      hadoopConf:
+        fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+        fs.s3a.aws.credentials.provider: "com.amazonaws.auth.InstanceProfileCredentialsProvider"
+      type: Python
+      pythonVersion: "3"
+      mode: cluster
+      image: "your-ecr-image-repo"  # Replace with your actual ECR image URI
+      imagePullPolicy: IfNotPresent
+      mainApplicationFile: local:///opt/spark/work-dir/spark-iceberg-ingest-transformer/src/app.py
+      sparkVersion: "3.0.1"
+      restartPolicy:
+        type: Never
+      driver:
+        cores: 1
+        coreLimit: "1200m"
+        memory: "8g"
+        labels:
+          version: 3.0.1
+        serviceAccount: spark
+        securityContext:
+          fsGroup: 65534
+        volumeMounts:
+          - name: ivy
+            mountPath: /tmp
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: AWS_SECRET_ACCESS_KEY
+          - name: AWS_REGION
+            value: "ap-south-1"
+      executor:
+        cores: 3
+        instances: 3
+        memory: "16g"
+        labels:
+          version: 3.0.1
+        volumeMounts:
+          - name: ivy
+            mountPath: /tmp

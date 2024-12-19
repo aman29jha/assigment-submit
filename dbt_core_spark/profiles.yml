@@ -1,0 +1,9 @@
+dbt_core_spark:
+  target: dev
+  outputs:
+    dev:
+      type: spark
+      method: thrift
+      schema: default
+      host: localhost
+      port: 10000

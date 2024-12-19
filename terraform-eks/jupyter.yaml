@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jupyter-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jupyter-role-binding
+  namespace: default
+roleRef:
+  kind: Role
+  name: jupyter-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: jupyter-sa
+  namespace: default
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ namespace: default
+ name: jupyter-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list", "edit", "create", "delete"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter
+spec:
+  selector:
+    matchLabels:
+      app: jupyter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jupyter
+    spec:
+      serviceAccountName: jupyter-sa
+      containers:
+      - name: server
+        image: jupyter/pyspark-notebook:45b8529a6bfc
+        # resources:
+        #   requests:
+        #     memory: "1Gi"
+        #     cpu: "0.5"
+        #   limits:
+        #     memory: "2Gi"
+        #     cpu: "1"
+        ports:
+        - name: jupyter-port
+          containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter
+  labels:
+    app: jupyter
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: jupyter-port
+  selector:
+    app: jupyter
