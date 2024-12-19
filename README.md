@@ -1,6 +1,10 @@
 # Build a Docker Image
 ```bash
 docker build -t my-spark-hive-iceberg-image .
+
+# if you face problem use
+cd spark-iceberg-tools/backup/
+docker build -t my-spark-hive-iceberg-image .
 ```
 
 # Check the Image with a Trial Run
